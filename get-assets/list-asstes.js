@@ -1,43 +1,60 @@
-console.log('starting script');
-
 const puppeteer = require('puppeteer');
+const fs = require('fs');
 
 (async () => {
-    console.log('async working');
+    console.log('Starting script');
+
     try {
-        console.log('launching browser');
-        const browser = await puppeteer.launch({headless:true});
+        console.log('Launching browser');
+        const browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
 
         const url = 'https://staging.capitalgazette.com';
-        console.log(`navigating to ${url}...`);
-        await page.goto(url, {waitUntil: 'networkidle0'});
+        console.log(`Navigating to ${url}...`);
+        await page.goto(url, { waitUntil: 'networkidle2' });
 
         const requests = [];
-        page.on('request', request =>{
-            requests.push(request.url()); //use this line for only external resources
-            //const pageURL = new URL(url);
-            //const requestURL = new URL(request.url());
-            /*if(requestURL.origin === pageURL.origin){
-                requests.push(request.url());
-            }*/
+        const pageOrigin = new URL(url).origin;
+        console.log(`Page Origin: ${pageOrigin}`);
+
+        page.on('request', request => {
+            const requestURL = new URL(request.url());
+            const requestOrigin = requestURL.origin;
+            console.log(`Request URL: ${request.url()} - Origin: ${requestOrigin}`);
+            requests.push({ url: request.url(), origin: requestOrigin });
         });
 
-        await new Promise(resolve => setTimeout(resolve, 50000));
+        // Wait longer to ensure all requests are captured
+        await page.waitForTimeout(15000);  // Increased wait time
 
         await browser.close();
-        console.log('browser has closed');
+        console.log('Browser has closed');
 
-        //const assetTypes = ['.css' , '.js'];
-        //const assets = requests.filter(url =>assetTypes.some(type => url.endsWith(type)) );
+        // Filter and categorize requests
+        const internalRequests = requests.filter(req => req.origin === pageOrigin);
+        const externalRequests = requests.filter(req => req.origin !== pageOrigin);
 
-        //console.log(requests);
+        // Output internal requests to console
+        console.log('Internal requests:');
+        internalRequests.forEach(req => console.log(req.url));
 
+        // If internal requests are empty, log a message
+        if (internalRequests.length === 0) {
+            console.log('No internal requests found');
+        }
 
-        console.log('assets loaded by page:');
-        requests.forEach(url => console.log(url));
+        // Writing the results to files
+        const internalFilePath = 'internal_assets.txt';
+        const externalFilePath = 'external_assets.txt';
+
+        fs.writeFileSync(internalFilePath, internalRequests.map(req => req.url).join('\n'), 'utf8');
+        fs.writeFileSync(externalFilePath, externalRequests.map(req => req.url).join('\n'), 'utf8');
+
+        console.log(`Internal assets written to ${internalFilePath}`);
+        console.log(`External assets written to ${externalFilePath}`);
 
     } catch (error) {
-        console.log('there was an error');
+        console.log('There was an error');
+        console.error(error);
     }
-} )();
+})();
