@@ -19,7 +19,7 @@ while IFS=, read -r role first_name last_name email; do
   username="$email"
 
   # Create the WP CLI command
-  wp_command="wp user create $username $email --role=$role --first_name=$first_name --last_name=$last_name"
+  wp_command="wp user create \"$username\" \"$email\" --role=\"$role\" --first_name=\"$first_name\" --last_name=\"$last_name\""
 
   # Run the WP CLI command
   echo "Running command: $wp_command"
