@@ -8,6 +8,12 @@ if [[ ! -f "$CSV_FILE" ]]; then
   exit 1
 fi
 
+# Function to remove non-printing characters from a string
+remove_non_printable_chars() {
+  local string="$1"
+  echo "$string" | tr -cd '[:print:]'
+}
+
 # Read the CSV file line by line
 while IFS=, read -r role first_name last_name email; do
   # Skip the header line
@@ -22,12 +28,11 @@ while IFS=, read -r role first_name last_name email; do
   create_command="wp user create \"$username\" \"$email\""
   additional_args="--role=\"$role\" --first_name=\"$first_name\" --last_name=\"$last_name\""
 
-  # Concatenate the variables to form the WP CLI command
-  wp_command="$create_command $additional_args"
+  # Remove non-printing characters from create_command
+  create_command_clean="$(remove_non_printable_chars "$create_command")"
 
-  # Display create_command with non-printing characters visible
-  echo "create_command with non-printing characters:"
-  echo "$create_command" | cat -A
+  # Concatenate the variables to form the WP CLI command
+  wp_command="$create_command_clean $additional_args"
 
   # Run the WP CLI command
   echo "Running command: $wp_command"
