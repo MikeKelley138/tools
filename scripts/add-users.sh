@@ -18,8 +18,12 @@ while IFS=, read -r role first_name last_name email; do
   # Extract username from email (remove everything after '@' including '@')
   username="${email%%@*}"
 
-  # Create the WP CLI command
-  wp_command='wp user create "'"$username"'" "'"$email"'" --role="'"$role"'" --first_name="'"$first_name"'" --last_name="'"$last_name"'"'
+  # Create variables for different parts of the command
+  create_command="wp user create \"$username\" \"$email\""
+  additional_args="--role=\"$role\" --first_name=\"$first_name\" --last_name=\"$last_name\""
+
+  # Concatenate the variables to form the WP CLI command
+  wp_command="$create_command $additional_args"
 
   # Run the WP CLI command
   echo "Running command: $wp_command"
