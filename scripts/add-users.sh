@@ -25,6 +25,10 @@ while IFS=, read -r role first_name last_name email; do
   # Concatenate the variables to form the WP CLI command
   wp_command="$create_command $additional_args"
 
+  # Display create_command with non-printing characters visible
+  echo "create_command with non-printing characters:"
+  echo "$create_command" | cat -A
+
   # Run the WP CLI command
   echo "Running command: $wp_command"
   eval "$wp_command"
