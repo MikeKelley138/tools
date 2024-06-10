@@ -8,7 +8,6 @@ if [[ ! -f "$CSV_FILE" ]]; then
   exit 1
 fi
 
-# Read the CSV file line by line
 while IFS=, read -r role first_name last_name email; do
   # Skip the header line
   if [[ "$role" == "role" ]]; then
@@ -21,9 +20,13 @@ while IFS=, read -r role first_name last_name email; do
   # Create variables for different parts of the command
   create_command="vip @385.develop -- wp user create \"$username\" \"$email\" --role=\"$role\" --first_name=\"$first_name\" --last_name=\"$last_name\" "
 
-  # Run the WP CLI command
+  # Debugging: Print the command before running it
   echo "Running command: $create_command"
-  eval "$create_command"
 
+  # Run the WP CLI command
+  echo "preparing eval"
+  eval "$create_command"
+  echo "eval complete"
 done < "$CSV_FILE"
+
 
