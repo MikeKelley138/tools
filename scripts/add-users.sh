@@ -31,7 +31,7 @@ process_batch() {
     echo "Running command: $wp_command" | tee -a "$LOG_FILE"
     
     # Run the WP CLI command and log the output
-    eval "$wp_command" | tee -a "$LOG_FILE"
+    eval "$wp_command" 2>&1 | tee -a "$LOG_FILE"
   done
 }
 
