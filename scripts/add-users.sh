@@ -20,15 +20,10 @@ fi
 # Process the CSV file using awk
 awk -F',' 'NR > 1 { 
     role = $1; 
-    first_name = $2; 
-    last_name = $3; 
     email = $4; 
     gsub(/^[[:space:]]+|[[:space:]]+$/, "", role); 
-    gsub(/^[[:space:]]+|[[:space:]]+$/, "", first_name); 
-    gsub(/^[[:space:]]+|[[:space:]]+$/, "", last_name); 
     gsub(/^[[:space:]]+|[[:space:]]+$/, "", email); 
-    username = substr(email, 1, index(email, "@") - 1); 
-    command = "vip @385.preprod -- wp user create \047" username "\047 \047" email "\047 --role=\047" role "\047 >> \047" output_log "\047 2>&1"; 
+    command = "vip @385.develop -- wp user create \047" email "\047 \047" email "\047 --role=\047" role "\047 >> \047" output_log "\047 2>&1"; 
     print "Running command:", command; 
     system(command); 
 }' output_log="$OUTPUT_LOG" "$CSV_FILE"
