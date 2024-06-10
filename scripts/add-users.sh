@@ -65,4 +65,22 @@ echo "User creation process completed." | tee -a "$LOG_FILE"
 # Function to process a single user
 process_user() {
   local user_info=$1
-  IFS=, read 
+  IFS=, read -r role first_name last_name email <<< "$user_info"
+  # Extract username from email (remove everything after '@' including '@')
+  username="${email%%@*}"
+
+  # Create the WP CLI command
+  wp_command="vip @123.preprod -- wp user create \"$username\" \"$email\" --role=\"$role\" --first_name=\"$first_name\" --last_name=\"$last_name\" --allow-root"
+
+  # Debugging: Echo the command before running it
+  echo "Running command: $wp_command" | tee -a "$LOG_FILE"
+
+  # Run the WP CLI command and log the output
+  eval "$wp_command" 2>&1 | tee -a "$LOG_FILE"
+
+  # Check the exit status of the last command
+  if [[ $? -ne 0 ]]; then
+    echo "Command failed: $wp_command" | tee -a "$LOG_FILE"
+    exit 1
+  fi
+}
