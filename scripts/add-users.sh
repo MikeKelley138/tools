@@ -3,6 +3,7 @@
 CSV_FILE="users.csv"
 LOG_FILE="user_creation.log"
 BATCH_SIZE=5
+DELAY_BETWEEN_BATCHES=5 # seconds
 
 # Check if the CSV file exists
 if [[ ! -f "$CSV_FILE" ]]; then
@@ -32,16 +33,29 @@ process_batch() {
     
     # Run the WP CLI command and log the output
     eval "$wp_command" 2>&1 | tee -a "$LOG_FILE"
+    
+    # Check the exit status of the last command
+    if [[ $? -ne 0 ]]; then
+      echo "Command failed: $wp_command" | tee -a "$LOG_FILE"
+      exit 1
+    fi
   done
 }
 
 # Read the CSV file and process users in batches
 batch=()
 while IFS=, read -r role first_name last_name email; do
+  # Skip empty lines
+  if [[ -z "$role" || -z "$first_name" || -z "$last_name" || -z "$email" ]]; then
+    continue
+  fi
+
   batch+=("$role,$first_name,$last_name,$email")
   if [[ ${#batch[@]} -ge $BATCH_SIZE ]]; then
     process_batch "${batch[@]}"
     batch=()
+    echo "Batch completed. Sleeping for $DELAY_BETWEEN_BATCHES seconds..." | tee -a "$LOG_FILE"
+    sleep $DELAY_BETWEEN_BATCHES
   fi
 done < "$CSV_FILE"
 
