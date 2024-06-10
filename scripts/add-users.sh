@@ -7,6 +7,11 @@ if [[ ! -f "$CSV_FILE" ]]; then
   echo "CSV file not found"
   exit 1
 fi
+# Trim leading and trailing spaces from fields
+role=$(echo "$role" | tr -d '[:space:]')
+first_name=$(echo "$first_name" | tr -d '[:space:]')
+last_name=$(echo "$last_name" | tr -d '[:space:]')
+email=$(echo "$email" | tr -d '[:space:]')
 
 # Read the CSV file line by line
 while IFS=',' read -r role first_name last_name email 
