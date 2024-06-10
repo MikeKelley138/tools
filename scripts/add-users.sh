@@ -23,7 +23,8 @@ awk -F',' 'NR > 1 {
     email = $4; 
     gsub(/^[[:space:]]+|[[:space:]]+$/, "", role); 
     gsub(/^[[:space:]]+|[[:space:]]+$/, "", email); 
-    command = "vip @385.develop -- wp user create \047" email "\047 \047" email "\047 --role=\047" role "\047 >> \047" output_log "\047 2>&1"; 
+    username = substr(email, 1, index(email, "@") - 1); 
+    command = "vip @386.develop -- wp user create \"" username "\" \"" email "\" --role=\"" role "\" >> \"" output_log "\" 2>&1"; 
     print "Running command:", command; 
     system(command); 
 }' output_log="$OUTPUT_LOG" "$CSV_FILE"
