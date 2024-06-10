@@ -4,6 +4,8 @@ set -x
 CSV_FILE="./users.csv"
 OUTPUT_LOG="command_output.log"
 
+dos2unix "$CSV_FILE"
+
 # Check if the CSV file exists
 if [[ ! -f "$CSV_FILE" ]]; then
   echo "CSV file not found"
@@ -13,7 +15,7 @@ fi
 # Read the CSV file line by line
 while IFS=',' read -r role first_name last_name email; do
   echo "Read line: role=$role, first_name=$first_name, last_name=$last_name, email=$email"
-  
+
   # Skip the header line
   if [[ "$role" == "role" ]]; then
     echo "Skipping header line"
@@ -30,7 +32,7 @@ while IFS=',' read -r role first_name last_name email; do
   username="${email%%@*}"
 
   # Create command with output redirection
-  create_command="vip @385.develop -- wp user create \"$username\" \"$email\" --role=\"$role\" --first_name=\"$first_name\" --last_name=\"$last_name\" >> $OUTPUT_LOG 2>&1"
+  create_command="vip @385.preprod -- wp user create \"$username\" \"$email\" --role=\"$role\"  >> $OUTPUT_LOG 2>&1"
 
   # Run the WP CLI command
   echo "Running command: $create_command"
