@@ -1,31 +1,21 @@
 #!/bin/bash
+set -x
 
-CSV_FILE="users.csv"
-
-# Function to check CSV file format
-check_csv_format() {
-    while IFS=',' read -r role first_name last_name email; do
-        # Check if each line has the expected number of fields
-        if [[ "$role" == "" || "$first_name" == "" || "$last_name" == "" || "$email" == "" ]]; then
-            echo "Error: Invalid CSV format - Missing fields in line: $role,$first_name,$last_name,$email"
-            exit 1
-        fi
-        # Add additional validation as needed
-        # For example, check if email addresses are valid
-    done < "$CSV_FILE"
-}
+CSV_FILE="./users.csv"
 
 # Check if the CSV file exists
 if [[ ! -f "$CSV_FILE" ]]; then
   echo "CSV file not found"
   exit 1
 fi
-
-# Validate the CSV file format
-check_csv_format
+# Trim leading and trailing spaces from fields
+role=$(echo "$role" | tr -d '[:space:]')
+first_name=$(echo "$first_name" | tr -d '[:space:]')
+last_name=$(echo "$last_name" | tr -d '[:space:]')
+email=$(echo "$email" | tr -d '[:space:]')
 
 # Read the CSV file line by line
-while IFS=',' read -r role first_name last_name email 
+while IFS=',' read -r role first_name last_name email
 do
   # Skip the header line
   if [[ "$role" == "role" ]]; then
@@ -36,13 +26,13 @@ do
   username="${email%%@*}"
 
   # Create variables for different parts of the command
-  create_command="vip @385.develop -- wp user create \"$username\" \"$email\" --role=\"$role\" --first_name=\"$first_name\" --last_name=\"$last_name\" "
+  create_command="vip @385.develop -- wp user create \"$username\" \"$email\" --role=\"$role\" --first_name=\"$first_name\" --last_name=\"$last_name\" >> command_output.log 2>&1"
 
   # Run the WP CLI command
   echo "Running command: $create_command"
-  echo "preparing eval"
-  eval "$create_command"
-  echo "eval complete"
+  eval "$create_command" 2>/dev/null
+
 
 done < "$CSV_FILE"
 
+set +x
