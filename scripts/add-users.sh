@@ -18,13 +18,13 @@ if [[ ! -f "$CSV_FILE" ]]; then
 fi
 
 # Process the CSV file using awk
-awk -F',' 'NR > 1 { 
-    role = $1; 
-    email = $4; 
-    gsub(/^[[:space:]]+|[[:space:]]+$/, "", role); 
-    gsub(/^[[:space:]]+|[[:space:]]+$/, "", email); 
-    username = substr(email, 1, index(email, "@") - 1); 
-    command = "vip @386.develop -- wp user create \"" username "\" \"" email "\" --role=\"" role "\" >> \"" output_log "\" 2>&1"; 
-    print "Running command:", command; 
-    system(command); 
+awk -F',' 'NR > 1 {
+    role = $1
+    email = $4
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", role)
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", email)
+    username = substr(email, 1, index(email, "@") - 1)
+    command = "vip @386.develop -- wp user create \\"" username "\\" \\"" email "\\" --role=\\"" role "\\" >> \\"" output_log "\\" 2>&1"
+    print "Running command:", command
+    system(command)
 }' output_log="$OUTPUT_LOG" "$CSV_FILE"
