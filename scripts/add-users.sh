@@ -1,4 +1,16 @@
-while IFS=, read -r role first_name last_name email; do
+#!/bin/bash
+
+CSV_FILE="users.csv"
+
+# Check if the CSV file exists
+if [[ ! -f "$CSV_FILE" ]]; then
+  echo "CSV file not found"
+  exit 1
+fi
+
+# Read the CSV file line by line
+while IFS=',' read -r role first_name last_name email 
+do
   # Skip the header line
   if [[ "$role" == "role" ]]; then
     continue
@@ -7,14 +19,14 @@ while IFS=, read -r role first_name last_name email; do
   # Extract username from email (remove everything after '@' including '@')
   username="${email%%@*}"
 
-  # Create array for the WP CLI command
-  create_command=("vip" "@385.develop" "--" "wp" "user" "create" "$username" "$email" "--role=$role" "--first_name=$first_name" "--last_name=$last_name")
-
-  # Debugging: Print the command before running it
-  echo "Running command: ${create_command[@]}"
+  # Create variables for different parts of the command
+  create_command="vip @385.develop -- wp user create \"$username\" \"$email\" --role=\"$role\" --first_name=\"$first_name\" --last_name=\"$last_name\" "
 
   # Run the WP CLI command
-  echo "preparing command execution"
-  "${create_command[@]}"
-  echo "command execution complete"
+  echo "Running command: $create_command"
+  echo "preparing eval"
+  eval "$create_command"
+  echo "eval complete"
+
 done < "$CSV_FILE"
+
