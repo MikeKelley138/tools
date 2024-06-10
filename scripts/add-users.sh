@@ -5,6 +5,9 @@ LOG_FILE="user_creation.log"
 BATCH_SIZE=5
 DELAY_BETWEEN_BATCHES=5 # seconds
 
+# Initialize the log file
+echo "Starting user creation process..." > "$LOG_FILE"
+
 # Check if the CSV file exists
 if [[ ! -f "$CSV_FILE" ]]; then
   echo "CSV file not found" | tee -a "$LOG_FILE"
@@ -45,23 +48,13 @@ process_batch() {
 # Read the CSV file and process users in batches
 batch=()
 while IFS=, read -r role first_name last_name email; do
+  # Log the user details being processed
+  echo "Reading user: $role, $first_name, $last_name, $email" | tee -a "$LOG_FILE"
+  
   # Skip empty lines
   if [[ -z "$role" || -z "$first_name" || -z "$last_name" || -z "$email" ]]; then
+    echo "Skipping empty or invalid line" | tee -a "$LOG_FILE"
     continue
   fi
 
-  batch+=("$role,$first_name,$last_name,$email")
-  if [[ ${#batch[@]} -ge $BATCH_SIZE ]]; then
-    process_batch "${batch[@]}"
-    batch=()
-    echo "Batch completed. Sleeping for $DELAY_BETWEEN_BATCHES seconds..." | tee -a "$LOG_FILE"
-    sleep $DELAY_BETWEEN_BATCHES
-  fi
-done < "$CSV_FILE"
-
-# Process any remaining users
-if [[ ${#batch[@]} -gt 0 ]]; then
-  process_batch "${batch[@]}"
-fi
-
-echo "User creation process completed." | tee -a "$LOG_FILE"
+  batch+=("$role,$first_name,$last_name,$emai
