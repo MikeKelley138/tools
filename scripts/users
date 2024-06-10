@@ -1,1 +1,4 @@
-
+role,first_name,last_name,email
+editor,Pam,Kragen,one@example.com
+editor,Jay,Posner,two@example.com
+editor,Jay,Posner,three@example.com
