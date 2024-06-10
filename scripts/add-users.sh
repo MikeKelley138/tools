@@ -2,16 +2,27 @@
 
 CSV_FILE="users.csv"
 
+# Function to check CSV file format
+check_csv_format() {
+    while IFS=',' read -r role first_name last_name email; do
+        # Check if each line has the expected number of fields
+        if [[ "$role" == "" || "$first_name" == "" || "$last_name" == "" || "$email" == "" ]]; then
+            echo "Error: Invalid CSV format - Missing fields in line: $role,$first_name,$last_name,$email"
+            exit 1
+        fi
+        # Add additional validation as needed
+        # For example, check if email addresses are valid
+    done < "$CSV_FILE"
+}
+
 # Check if the CSV file exists
 if [[ ! -f "$CSV_FILE" ]]; then
   echo "CSV file not found"
   exit 1
 fi
-# Trim leading and trailing spaces from fields
-role=$(echo "$role" | tr -d '[:space:]')
-first_name=$(echo "$first_name" | tr -d '[:space:]')
-last_name=$(echo "$last_name" | tr -d '[:space:]')
-email=$(echo "$email" | tr -d '[:space:]')
+
+# Validate the CSV file format
+check_csv_format
 
 # Read the CSV file line by line
 while IFS=',' read -r role first_name last_name email 
