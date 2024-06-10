@@ -57,4 +57,19 @@ while IFS=, read -r role first_name last_name email; do
     continue
   fi
 
-  batch+=("$role,$first_name,$last_name,$emai
+  batch+=("$role,$first_name,$last_name,$email")
+  if [[ ${#batch[@]} -ge $BATCH_SIZE ]]; then
+    process_batch "${batch[@]}"
+    batch=()
+    echo "Batch completed. Sleeping for $DELAY_BETWEEN_BATCHES seconds..." | tee -a "$LOG_FILE"
+    sleep $DELAY_BETWEEN_BATCHES
+  fi
+done < "$CSV_FILE"
+
+# Process any remaining users
+if [[ ${#batch[@]} -gt 0 ]]; then
+  echo "Processing remaining users" | tee -a "$LOG_FILE"
+  process_batch "${batch[@]}"
+fi
+
+echo "User creation process completed." | tee -a "$LOG_FILE"
