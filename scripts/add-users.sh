@@ -6,7 +6,13 @@ OUTPUT_LOG="command_output.log"
 TEMP_FILE="./users_clean.csv"
 
 # Clean the CSV file
-tr -d '\r' < "$CSV_FILE" | sed 's/%$//' > "$TEMP_FILE"
+# Remove all non-printable characters, including the % symbol and carriage returns
+tr -cd '\11\12\15\40-\176' < "$CSV_FILE" > "$TEMP_FILE"
+
+# Ensure the file ends with a newline
+echo >> "$TEMP_FILE"
+
+# Move the cleaned file back to the original
 mv "$TEMP_FILE" "$CSV_FILE"
 
 # Convert CSV file to Unix format to handle any line-ending issues
@@ -17,7 +23,6 @@ if [[ ! -f "$CSV_FILE" ]]; then
   echo "CSV file not found"
   exit 1
 fi
-
 # Read the CSV file line by line
 while IFS=',' read -r role first_name last_name email; do
   echo "Original line: role=$role, first_name=$first_name, last_name=$last_name, email=$email"
