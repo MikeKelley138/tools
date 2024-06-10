@@ -11,10 +11,12 @@ if [[ ! -f "$CSV_FILE" ]]; then
 fi
 
 # Read the CSV file line by line
-while IFS=',' read -r role first_name last_name email
-do
+while IFS=',' read -r role first_name last_name email; do
+  echo "Read line: role=$role, first_name=$first_name, last_name=$last_name, email=$email"
+  
   # Skip the header line
   if [[ "$role" == "role" ]]; then
+    echo "Skipping header line"
     continue
   fi
 
@@ -32,7 +34,7 @@ do
 
   # Run the WP CLI command
   echo "Running command: $create_command"
-  eval "$create_command" 2>/dev/null
+  bash -c "$create_command"
 
 done < "$CSV_FILE"
 
