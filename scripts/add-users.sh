@@ -1,19 +1,12 @@
 #!/bin/bash
-set -x
 
 CSV_FILE="./users.csv"
 OUTPUT_LOG="command_output.log"
-TEMP_FILE="./users_clean.csv"
 
 # Clean the CSV file
-# Remove all non-printable characters, including the % symbol and carriage returns
-tr -cd '\11\12\15\40-\176' < "$CSV_FILE" > "$TEMP_FILE"
-
-# Ensure the file ends with a newline
-echo >> "$TEMP_FILE"
-
-# Move the cleaned file back to the original
-mv "$TEMP_FILE" "$CSV_FILE"
+tr -cd '\11\12\15\40-\176' < "$CSV_FILE" > "${CSV_FILE}.clean"
+echo >> "${CSV_FILE}.clean"
+mv "${CSV_FILE}.clean" "$CSV_FILE"
 
 # Convert CSV file to Unix format to handle any line-ending issues
 dos2unix "$CSV_FILE"
@@ -23,35 +16,19 @@ if [[ ! -f "$CSV_FILE" ]]; then
   echo "CSV file not found"
   exit 1
 fi
-# Read the CSV file line by line
-while IFS=',' read -r role first_name last_name email; do
-  echo "Original line: role=$role, first_name=$first_name, last_name=$last_name, email=$email"
 
-  # Skip the header line
-  if [[ "$role" == "role" ]]; then
-    echo "Skipping header line"
-    continue
-  fi
-
-  # Trim leading and trailing spaces from fields and remove potential carriage return characters
-  role=$(echo "$role" | tr -d '[:space:]' | tr -d '\r')
-  first_name=$(echo "$first_name" | tr -d '[:space:]' | tr -d '\r')
-  last_name=$(echo "$last_name" | tr -d '[:space:]' | tr -d '\r')
-  email=$(echo "$email" | tr -d '[:space:]' | tr -d '\r')
-
-  echo "Trimmed line: role=$role, first_name=$first_name, last_name=$last_name, email=$email"
-
-  # Extract username from email (remove everything after '@' including '@')
-  username="${email%%@*}"
-
-  # Create command with output redirection
-  create_command="vip @385.develop -- wp user create \"$username\" \"$email\" --role=\"$role\" >> $OUTPUT_LOG 2>&1"
-
-  # Run the WP CLI command
-  echo "Running command: $create_command"
-  bash -c "$create_command"
-
-done < "$CSV_FILE"
-
-# Disable debug mode at the end of the script
-set +x
+# Process the CSV file using awk
+awk -F',' 'NR > 1 { 
+    role = $1; 
+    first_name = $2; 
+    last_name = $3; 
+    email = $4; 
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", role); 
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", first_name); 
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", last_name); 
+    gsub(/^[[:space:]]+|[[:space:]]+$/, "", email); 
+    username = substr(email, 1, index(email, "@") - 1); 
+    command = "vip @385.develop -- wp user create \"" username "\" \"" email "\" --role=\"" role "\" >> \"" output_log "\" 2>&1"; 
+    print "Running command:", command; 
+    system(command); 
+}' output_log="$OUTPUT_LOG" "$CSV_FILE"
