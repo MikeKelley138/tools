@@ -8,12 +8,13 @@ DELAY_BETWEEN_BATCHES=5 # seconds
 # Initialize the log file
 echo "Starting user creation process..." > "$LOG_FILE"
 
-# Function to process a single user
-process_user() {
-  local user_info=$1
-  IFS=, read -r role first_name last_name email <<< "$user_info"
-  # Extract username from email (remove everything after '@' including '@')
-  username="${email%%@*}"
+# Function to create a WP user
+create_wp_user() {
+  local username="$1"
+  local email="$2"
+  local role="$3"
+  local first_name="$4"
+  local last_name="$5"
 
   # Create the WP CLI command
   wp_command="vip @123.preprod -- wp user create \"$username\" \"$email\" --role=\"$role\" --first_name=\"$first_name\" --last_name=\"$last_name\" --allow-root"
@@ -37,50 +38,22 @@ if [[ ! -f "$CSV_FILE" ]]; then
   exit 1
 fi
 
-# Read the CSV file and process users in batches
-batch=()
-header_skipped=false # Flag to track if the header line has been skipped
-line_count=0
+# Read the CSV file and process users
 while IFS=, read -r role first_name last_name email; do
-  ((line_count++))
-
   # Skip the header line
-  if ! $header_skipped; then
-    header_skipped=true
-    echo "Skipping header line" | tee -a "$LOG_FILE"
+  if [[ "$role" == "role" ]]; then
     continue
   fi
 
-  # Log the user details being processed
-  echo "Reading user: $role, $first_name, $last_name, $email" | tee -a "$LOG_FILE"
-  
-  # Skip empty lines
-  if [[ -z "$role" || -z "$first_name" || -z "$last_name" || -z "$email" ]]; then
-    echo "Skipping empty or invalid line" | tee -a "$LOG_FILE"
-    continue
-  fi
+  # Extract username from email (remove everything after '@' including '@')
+  username="${email%%@*}"
 
-  batch+=("$role,$first_name,$last_name,$email")
-  if [[ ${#batch[@]} -ge $BATCH_SIZE ]]; then
-    # Process the batch
-    for user_info in "${batch[@]}"; do
-      process_user "$user_info"
-    done
+  # Create the WP user
+  create_wp_user "$username" "$email" "$role" "$first_name" "$last_name"
 
-    # Clear the batch
-    batch=()
-
-    echo "Batch completed. Sleeping for $DELAY_BETWEEN_BATCHES seconds..." | tee -a "$LOG_FILE"
-    sleep $DELAY_BETWEEN_BATCHES
-  fi
+  # Delay between users
+  echo "Sleeping for $DELAY_BETWEEN_BATCHES seconds..." | tee -a "$LOG_FILE"
+  sleep $DELAY_BETWEEN_BATCHES
 done < "$CSV_FILE"
-
-# Process any remaining users
-if [[ ${#batch[@]} -gt 0 ]]; then
-  echo "Processing remaining users" | tee -a "$LOG_FILE"
-  for user_info in "${batch[@]}"; do
-    process_user "$user_info"
-  done
-fi
 
 echo "User creation process completed." | tee -a "$LOG_FILE"
