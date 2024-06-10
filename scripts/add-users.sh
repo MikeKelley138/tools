@@ -3,6 +3,11 @@ set -x
 
 CSV_FILE="./users.csv"
 OUTPUT_LOG="command_output.log"
+TEMP_FILE="./users_clean.csv"
+
+# Clean the CSV file
+tr -d '\r' < "$CSV_FILE" | sed 's/%$//' > "$TEMP_FILE"
+mv "$TEMP_FILE" "$CSV_FILE"
 
 # Convert CSV file to Unix format to handle any line-ending issues
 dos2unix "$CSV_FILE"
