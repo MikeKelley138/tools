@@ -22,9 +22,11 @@ for FILE in "$FILES_DIR"/page*.txt; do
     echo "Checking post ID: $POST_ID"
 
     # Check if the post has a primary section meta value
-    PRIMARY_SECTION=$($VIP_CMD post meta get "$POST_ID" primary_section | xargs)
+    PRIMARY_SECTION=$($VIP_CMD post meta get "$POST_ID" primary_section)
+    #remove space/returns
+    PRIMARY_SECTION="${PRIMARY_SECTION//[[:space:]]/}"
 
-    if [ "$PRIMARY_SECTION" == '1' ]; then
+    if [ "$PRIMARY_SECTION" == 1 ]; then
       # Update the primary section to the new value
       if $VIP_CMD post meta update "$POST_ID" primary_section "$NEW_PRIMARY_SECTION"; then
         echo "Primary section updated for post ID $POST_ID"
