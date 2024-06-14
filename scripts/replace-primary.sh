@@ -17,7 +17,7 @@ for FILE in "$FILES_DIR"/page*.txt; do
   # Read each post ID from the file
   while IFS= read -r POST_ID; do
     # Check if the post has a primary section meta value
-    PRIMARY_SECTION=$(vip @5867.preprod -- wp post meta get "$POST_ID" primary_sectio --format=plaintextn)
+    PRIMARY_SECTION=$(vip @5867.preprod -- wp post meta get "$POST_ID" primary_section --format=plaintext)
 
     if [ -z "$PRIMARY_SECTION" ]; then
       # Get post title
@@ -25,7 +25,7 @@ for FILE in "$FILES_DIR"/page*.txt; do
 
       # Append the post ID and title to the output file indicating no primary section
       echo "$POST_ID,\"$POST_TITLE\",No primary section" >> "$OUTPUT_FILE"
-    elif [ "$PRIMARY_SECTION" -eq 1 ]; then
+    elif [ "$PRIMARY_SECTION" -eq "1" ]; then
       # Update the primary section to the new value
       vip @5867.preprod -- wp post meta update "$POST_ID" primary_section "$NEW_PRIMARY_SECTION"
 
