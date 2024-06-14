@@ -28,25 +28,31 @@ for FILE in "$FILES_DIR"/page*.txt; do
 
     # Check if the post has a primary section meta value
     PRIMARY_SECTION=$($VIP_CMD post meta get "$POST_ID" primary_section)
-    # Remove whitespace (spaces, tabs, newlines) from PRIMARY_SECTION value
-    PRIMARY_SECTION="${PRIMARY_SECTION//[[:space:]]/}"
+    # Trim leading and trailing whitespace
+    PRIMARY_SECTION=$(echo "$PRIMARY_SECTION" | tr -d '[:space:]')
 
-    if [ "$PRIMARY_SECTION" == 1 ]; then
+    # Check if PRIMARY_SECTION is numeric and not empty
+    if [[ "$PRIMARY_SECTION" =~ ^[0-9]+$ ]]; then
       # Update the primary section to the new value
-      if $VIP_CMD post meta update "$POST_ID" primary_section "$NEW_PRIMARY_SECTION"; then
-        echo "Primary section updated for post ID $POST_ID"
+      if [ "$PRIMARY_SECTION" -eq 1 ]; then
+        if $VIP_CMD post meta update "$POST_ID" primary_section "$NEW_PRIMARY_SECTION"; then
+          echo "Primary section updated for post ID $POST_ID"
 
-        # Get post title
-        POST_TITLE=$($VIP_CMD post get "$POST_ID" --field=post_title)
+          # Get post title
+          POST_TITLE=$($VIP_CMD post get "$POST_ID" --field=post_title)
 
-        # Append the post ID and title to the output file indicating the primary section was updated
-        echo "$POST_ID,\"$POST_TITLE\",Primary section updated to $NEW_PRIMARY_SECTION" >> "$OUTPUT_FILE"
+          # Append the post ID and title to the output file indicating the primary section was updated
+          echo "$POST_ID,\"$POST_TITLE\",Primary section updated to $NEW_PRIMARY_SECTION" >> "$OUTPUT_FILE"
+        else
+          echo "Failed to update primary section for post ID $POST_ID" >> "$OUTPUT_FILE"
+        fi
       else
-        echo "Failed to update primary section for post ID $POST_ID" >> "$OUTPUT_FILE"
+        echo "Post ID $POST_ID primary section is not '1', it's $PRIMARY_SECTION"
       fi
     else
-      echo "Post ID $POST_ID primary section is not '1', it's $PRIMARY_SECTION"
+      echo "Primary section for post ID $POST_ID is not numeric or empty"
     fi
+
   done < "$FILE"
 done
 
