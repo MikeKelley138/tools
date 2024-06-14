@@ -17,13 +17,18 @@ echo "ID,Post Title,Action" >> "$OUTPUT_FILE"
 for FILE in "$FILES_DIR"/page*.txt; do
   echo "Processing $FILE"
 
-  # Read each post ID from the file
-  while IFS= read -r POST_ID; do
+  # Read each line (which contains a POST_ID) from the file
+  while IFS= read -r POST_ID || [ -n "$POST_ID" ]; do
+    # Skip empty lines
+    if [ -z "$POST_ID" ]; then
+      continue
+    fi
+
     echo "Checking post ID: $POST_ID"
 
     # Check if the post has a primary section meta value
     PRIMARY_SECTION=$($VIP_CMD post meta get "$POST_ID" primary_section)
-    #remove space/returns
+    # Remove whitespace (spaces, tabs, newlines) from PRIMARY_SECTION value
     PRIMARY_SECTION="${PRIMARY_SECTION//[[:space:]]/}"
 
     if [ "$PRIMARY_SECTION" == 1 ]; then
