@@ -14,14 +14,11 @@ const fs = require('fs');
         await page.goto(url, { waitUntil: 'networkidle2' });
 
         const requests = [];
-        const pageOrigin = new URL(url).origin;
-        console.log(`Page Origin: ${pageOrigin}`);
+        console.log(`Page Origin: ${new URL(url).origin}`);
 
         page.on('request', request => {
-            const requestURL = new URL(request.url());
-            const requestOrigin = requestURL.origin;
-            console.log(`Request URL: ${request.url()} - Origin: ${requestOrigin}`);
-            requests.push({ url: request.url(), origin: requestOrigin });
+            console.log(`Request URL: ${request.url()}`);
+            requests.push(request.url());
         });
 
         // Wait longer to ensure all requests are captured
@@ -30,28 +27,11 @@ const fs = require('fs');
         await browser.close();
         console.log('Browser has closed');
 
-        // Filter and categorize requests
-        const internalRequests = requests.filter(req => req.origin === pageOrigin);
-        const externalRequests = requests.filter(req => req.origin !== pageOrigin);
+        // Writing the results to a file
+        const outputFilePath = 'all_requests.txt';
+        fs.writeFileSync(outputFilePath, requests.join('\n'), 'utf8');
 
-        // Output internal requests to console
-        console.log('Internal requests:');
-        internalRequests.forEach(req => console.log(req.url));
-
-        // If internal requests are empty, log a message
-        if (internalRequests.length === 0) {
-            console.log('No internal requests found');
-        }
-
-        // Writing the results to files
-        const internalFilePath = 'internal_assets.txt';
-        const externalFilePath = 'external_assets.txt';
-
-        fs.writeFileSync(internalFilePath, internalRequests.map(req => req.url).join('\n'), 'utf8');
-        fs.writeFileSync(externalFilePath, externalRequests.map(req => req.url).join('\n'), 'utf8');
-
-        console.log(`Internal assets written to ${internalFilePath}`);
-        console.log(`External assets written to ${externalFilePath}`);
+        console.log(`All requests written to ${outputFilePath}`);
 
     } catch (error) {
         console.log('There was an error');
