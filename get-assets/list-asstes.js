@@ -21,8 +21,8 @@ const fs = require('fs');
             requests.push(request.url());
         });
 
-        // Wait longer to ensure all requests are captured
-        await page.waitForTimeout(15000);  // Increased wait time
+        // Use page.waitFor with a timeout in milliseconds
+        await page.waitFor(15000);  // Wait for 15 seconds
 
         await browser.close();
         console.log('Browser has closed');
