@@ -14,15 +14,11 @@ const fs = require('fs');
         await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 }); // Increased timeout to 60 seconds
 
         const requests = [];
-        const pageOrigin = new URL(url).origin;
-        console.log(`Page Origin: ${pageOrigin}`);
 
         page.on('request', request => {
             const requestURL = new URL(request.url());
-            const requestOrigin = requestURL.origin;
-            // Log all requests to ensure we see what's being captured
-            console.log(`Captured Request: ${request.url()} - Origin: ${requestOrigin}`);
-            requests.push({ url: request.url(), origin: requestOrigin });
+            console.log(`Captured Request: ${request.url()} - Origin: ${requestURL.origin}`);
+            requests.push({ url: request.url(), origin: requestURL.origin });
         });
 
         // Wait longer to ensure all requests are captured
@@ -31,22 +27,11 @@ const fs = require('fs');
         await browser.close();
         console.log('Browser has closed');
 
-        // Filter internal requests
-        const internalRequests = requests.filter(req => req.origin === pageOrigin);
+        // Writing all requests to a file
+        const allRequestsFilePath = 'all_requests.txt';
+        fs.writeFileSync(allRequestsFilePath, requests.map(req => req.url).join('\n'), 'utf8');
 
-        // Output internal requests to console
-        if (internalRequests.length > 0) {
-            console.log('Internal requests:');
-            internalRequests.forEach(req => console.log(req.url));
-        } else {
-            console.log('No internal requests found.');
-        }
-
-        // Writing internal requests to a file
-        const internalFilePath = 'internal_assets.txt';
-        fs.writeFileSync(internalFilePath, internalRequests.map(req => req.url).join('\n'), 'utf8');
-
-        console.log(`Internal assets written to ${internalFilePath}`);
+        console.log(`All requests written to ${allRequestsFilePath}`);
 
     } catch (error) {
         console.log('There was an error');
