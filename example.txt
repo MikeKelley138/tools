@@ -101,3 +101,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		items.appendChild(newItem);
 	});
 });
+
+$files = [
+    'render.php' => "<?php\n/**\n * Block Name: " . $block_name . "\n *\n */\n\nif ( ! isset( \$block ) ) {\n\treturn;\n}\n\nif ( ! empty( \$block['data']['_is_preview'] ) ) {\n\techo '<img style=\"width:100%\" src=' . dirname(__FILE__) . '/preview.png\" alt=\"preview of the gallery block\">';\n\treturn;\n}\n",
