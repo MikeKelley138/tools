@@ -1,0 +1,103 @@
+<?php
+/**
+ * Block Name: Example Block
+ * Description: A simple placeholder ACF block.
+ */
+
+// Fallback values — because you might not have real fields yet.
+$title       = get_field('title') ?? 'Example Block Title';
+$description = get_field('description') ?? 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.';
+$items       = get_field('items') ?? [
+	['text' => 'Sample Item One'],
+	['text' => 'Sample Item Two'],
+	['text' => 'Sample Item Three'],
+];
+
+?>
+<section class="example-block">
+	<h2 class="example-block__title">
+		<?php echo esc_html( $title ); ?>
+	</h2>
+
+	<p class="example-block__description">
+		<?php echo esc_html( $description ); ?>
+	</p>
+
+	<div class="example-block__items" data-example-items>
+		<?php foreach ( $items as $item ) : ?>
+			<div class="example-block__item">
+				<?php echo esc_html( $item['text'] ?? 'Placeholder Item' ); ?>
+			</div>
+		<?php endforeach; ?>
+	</div>
+
+	<button class="example-block__button" data-example-button>
+		Click Me
+	</button>
+</section>
+
+
+
+
+.example-block {
+  padding: 2rem;
+  background: #f9fafc;
+  border: 1px solid #e2e5ea;
+  border-radius: 8px;
+  font-family: sans-serif;
+
+  &__title {
+    margin: 0 0 1rem;
+    font-size: 1.75rem;
+    color: #222;
+  }
+
+  &__description {
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+    color: #555;
+  }
+
+  &__items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  &__item {
+    padding: 0.75rem 1rem;
+    background: #fff;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+  }
+
+  &__button {
+    display: inline-block;
+    padding: 0.6rem 1rem;
+    background: #0073aa;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:hover {
+      background: #005f8d;
+    }
+  }
+}
+
+
+document.addEventListener("DOMContentLoaded", () => {
+	const button = document.querySelector("[data-example-button]");
+	const items = document.querySelector("[data-example-items]");
+
+	if (!button || !items) return;
+
+	button.addEventListener("click", () => {
+		const newItem = document.createElement("div");
+		newItem.className = "example-block__item";
+		newItem.textContent = "You clicked the button!";
+		items.appendChild(newItem);
+	});
+});
